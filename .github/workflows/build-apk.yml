@@ -1,0 +1,36 @@
+name: Build APK from ZIP
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Extract ZIP File
+        run: unzip -q ReelCraftAI.zip -d project_source
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build Debug APK
+        run: |
+          cd project_source
+          if [ -d "ReelCraftAI" ]; then cd ReelCraftAI; fi
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: project_source/**/app/build/outputs/apk/debug/*.apk
